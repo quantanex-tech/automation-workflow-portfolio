@@ -1,0 +1,1706 @@
+{
+  "name": "Order tracking updates",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "This file contains the last 6 months worth of despatches. We need to filter out everything except the ones we care about. \nEg. \n- Orders not yet fully fulfilled\n- Order lines not yet shipped\n\n\nTo get to the list we care about, first we need to find the orders in shopify that are still open, then check the spreadsheet for changes.\n\nCheck marshallingArea for the day of the week the order is due to be despatched. \nCheck status: \"Awaiting despatch\", \"Completed\"\nCheck despatch date: \"Estimated XX/XX/XXXX\", \"XX/XX/XXX\"\n\nMAIN FLOW\nIf status = awaiting depatch, compare estimated despatch date with marshallingarea day of week. If they match, add a scheduling update (maybe a JSON metafield or just a scheduled despatch date metafield)\n\nEnsure we're sending notifications for the right shipment - check the SKU being sent (be aware of multi-buy items).\n\n",
+        "height": 672,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1120,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "4ddbd68c-dce6-4146-a851-c5718b6a0200",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "readRows",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        },
+        "useRange": true,
+        "range": "A1:O550",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        320
+      ],
+      "id": "82665978-978e-4a4c-a959-0577e41f484e",
+      "name": "Get rows from sheet",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "GXfqOjKdNH0vRjxf",
+          "name": "Solilium Excel 365"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "endpoint": "[redacted-resource]",
+        "query": "mutation fulfillmentCreateV2($fulfillment: FulfillmentV2Input!, $message: String) {\n  fulfillmentCreateV2(fulfillment: $fulfillment, message: $message) {\n    fulfillment {\n      id\n      status\n      createdAt\n      trackingInfo {\n        company\n        number\n        url\n      }\n      fulfillmentLineItems(first: 50) {\n        nodes {\n          quantity\n          lineItem {\n            id\n            sku\n            name\n          }\n        }\n      }\n      order {\n        id\n        name\n      }\n    }\n    userErrors {\n      field\n      message\n    }\n  }\n}",
+        "variables": "={{ $json.toJsonString() }}"
+      },
+      "type": "n8n-nodes-base.graphql",
+      "typeVersion": 1.1,
+      "position": [
+        2432,
+        1088
+      ],
+      "id": "fc664123-df12-4b3d-b793-0cd226ab2cef",
+      "name": "add shipping update",
+      "executeOnce": false,
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "kEHx6sC9ZDc1nT3r",
+          "name": "Solilium Shopify"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "[redacted-resource]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -304,
+        320
+      ],
+      "id": "c3f4a0a9-cef0-4be0-9868-7235582a4034",
+      "name": "Get the latest tracking spreadsheet"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca6af014-7977-406c-b0cf-ed4037a32754",
+              "name": "=fileName",
+              "value": "=order_tracking_{{ DateTime.now().format('yyyy-MM-dd') }}.xlsx",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        320
+      ],
+      "id": "d4de2bc8-314c-45b5-a81c-9946e757fb17",
+      "name": "Set the new file name"
+    },
+    {
+      "parameters": {
+        "fileName": "={{ $json.fileName }}",
+        "parentId": "01PQKBFVJ6RTLII7V2ABF2XMTW2W2N5OWP",
+        "binaryData": true
+      },
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        320
+      ],
+      "id": "d5afea70-bced-4335-86ce-a0cee90782a0",
+      "name": "Upload to onedrive",
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "4i3hPoLQ6oMQLWIC",
+          "name": "Solilium Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d469c425-4c6f-44a1-9f7e-9a6b13f621af",
+              "leftValue": "={{ $json[\"Delivery Name\"].trim() }}",
+              "rightValue": "Solilium Ltd",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "7eb17108-7b7b-4a9c-a73f-5729b4815e9d",
+              "leftValue": "={{ $json[\"Order Ref\"] }}",
+              "rightValue": "TEST",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        320
+      ],
+      "id": "146e4ced-1be6-4675-b0b4-b31059bb92dc",
+      "name": "Filter out test orders"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "795f5088-1435-4996-abc3-91acd881e01e",
+              "name": "raw_order_ref",
+              "value": "={{ $json[\"Order Ref\"].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "50522e3c-15c1-490e-825d-34c6e18bba50",
+              "name": "base_order_ref",
+              "value": "={{ $json[\"Order Ref\"].match(\"^[0-9]+\")[0] }}",
+              "type": "number"
+            },
+            {
+              "id": "9954ace1-9d6c-4ae1-a654-2113ba3cc368",
+              "name": "shipment_part",
+              "value": "={{ $json[\"Order Ref\"].split(\"-\")[1] || null }}",
+              "type": "string"
+            },
+            {
+              "id": "81f180ff-c07b-4fe2-b5ec-6a7fc4eb5978",
+              "name": "Delivery Name",
+              "value": "={{ $json[\"Delivery Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "09b91f93-5844-4510-96dc-a1646ac20f7c",
+              "name": "Status",
+              "value": "={{ $json.Status.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "61c6c201-ffaf-4c72-86e5-79ba28c9dd42",
+              "name": "Despatch Date",
+              "value": "={{ $json[\"Despatch Date\"].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "5a99d5f3-6a9c-4fba-86c8-08fb6a16eff3",
+              "name": "MarshallingArea",
+              "value": "={{ $json.MarshallingArea.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "0b9d9a6c-f304-4290-998a-52181385f57a",
+              "name": "Delivery Method",
+              "value": "={{ $json[\"Delivery Method\"].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "8722fd2a-719d-4c6a-920d-7844988ee09d",
+              "name": "Consignment No",
+              "value": "={{ $json[\"Consignment No\"].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "281630d7-7d6d-43bc-99ec-05d9773ba921",
+              "name": "Anglo Code",
+              "value": "={{ $json[\"Anglo Code\"].trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        320
+      ],
+      "id": "24214c8a-adaa-4ef7-b330-bdc20d87d00a",
+      "name": "Keep and trim what's needed"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "append",
+              "field": "Anglo Code"
+            }
+          ]
+        },
+        "fieldsToSplitBy": "raw_order_ref, Consignment No, Delivery Method, base_order_ref, MarshallingArea, Status",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        576
+      ],
+      "id": "ffca9642-2a83-4384-a2b0-9a9d5b039fb1",
+      "name": "group lines by order"
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "endpoint": "[redacted-resource]",
+        "query": "=query getOrderForAngloImport($query: String!) {\n  orders(first: 5, query: $query) {\n    nodes {\n      id\n      number\n      displayFulfillmentStatus\n      lineItems(first: 25) {\n        nodes {\n          id\n          sku\n          variant {\n            metafield(key: \"parent_variant\", namespace: \"custom\") {\n              reference {\n                ... on ProductVariant {\n                  id\n                  sku\n                }\n              }\n            }\n          }\n          quantity\n        }\n      }\n      fulfillments(first: 7) {\n        status\n        fulfillmentLineItems(first: 20) {\n          nodes {\n            lineItem {\n              id\n              sku\n              variant {\n                metafield(key: \"parent_variant\", namespace: \"custom\") {\n                  reference {\n                    ... on ProductVariant {\n                      id\n                      sku\n                    }\n                  }\n                }\n              }\n            }\n            id\n          }\n        }\n      }\n      fulfillmentOrders(first: 5) {\n        nodes {\n          id\n          status\n          lineItems(first: 20) {\n            nodes {\n              id\n              sku\n              variant {\n                metafield(key: \"parent_variant\", namespace: \"custom\") {\n                  reference {\n                    ... on ProductVariant {\n                      id\n                      sku\n                    }\n                  }\n                }\n              }\n              lineItem {\n                fulfillmentStatus\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+        "variables": "={\n  \"query\": \"name:{{ $json.base_order_ref }}\"\n}",
+        "headerParametersUi": {
+          "parameter": []
+        }
+      },
+      "type": "n8n-nodes-base.graphql",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        768
+      ],
+      "id": "60184b51-060a-4aaf-ac03-4dbcce1d4a36",
+      "name": "get matching shopify orders",
+      "executeOnce": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "kEHx6sC9ZDc1nT3r",
+          "name": "Solilium Shopify"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        304,
+        576
+      ],
+      "id": "36ba0912-c78d-47c8-ad91-0c18f8852c6a",
+      "name": "Loop Over orders"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.orders.nodes[0].lineItems.nodes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        576,
+        624
+      ],
+      "id": "d6c9063e-29e5-4188-956d-824471ed8503",
+      "name": "split by line item"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aeb1515b-1e07-4980-9c7a-ed722be95996",
+              "name": "sku",
+              "value": "={{ $json.sku }}",
+              "type": "string"
+            },
+            {
+              "id": "2c6b9195-0c2b-4f6d-802d-fdc4ea9490b1",
+              "name": "parent_sku",
+              "value": "={{ $json?.variant?.metafield?.reference.sku  || \"\"}} ",
+              "type": "string"
+            },
+            {
+              "id": "9f458389-73a9-4879-8b99-2be5028e8eb2",
+              "name": "orderNumber",
+              "value": "={{ $('Loop Over orders').item.json.data.orders.nodes[0].number }}",
+              "type": "number"
+            },
+            {
+              "id": "1593eff3-079f-43bd-96fa-c92c41b263d0",
+              "name": "sku_matching",
+              "value": "={{ $json?.variant?.metafield?.reference.sku || $json.sku }}",
+              "type": "string"
+            },
+            {
+              "id": "12b53bcc-9a57-4c53-9dd9-1a20ff018b87",
+              "name": "fulfillments",
+              "value": "={{ $('Loop Over orders').item.json.data.orders.nodes[0].fulfillments }}",
+              "type": "array"
+            },
+            {
+              "id": "b2d8d221-09c5-43b2-bb13-87aeee3e1054",
+              "name": "fulfillmentStatus",
+              "value": "={{ $('Loop Over orders').item.json.data.orders.nodes[0].displayFulfillmentStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "d57c6958-5a8a-4825-a2fa-4e50a8798f85",
+              "name": "fulfillmentOrders",
+              "value": "={{ $('Loop Over orders').item.json.data.orders.nodes[0].fulfillmentOrders.nodes[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "d94d257e-6819-43a5-b582-1aca9c23938e",
+              "name": "quantity",
+              "value": "={{ $json.quantity }}",
+              "type": "number"
+            },
+            {
+              "id": "53f3a407-dca8-4564-be39-e785bc9a2bba",
+              "name": "lineItemId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        624
+      ],
+      "id": "e372ab01-2c09-414f-b2da-5c4b549d9662",
+      "name": "flatten orders into item rows"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "base_order_ref",
+              "field2": "orderNumber"
+            },
+            {
+              "field1": "Anglo Code",
+              "field2": "sku_matching"
+            }
+          ]
+        },
+        "joinMode": "enrichInput1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1184,
+        544
+      ],
+      "id": "903f7653-beaa-411b-ae5c-322be60eef76",
+      "name": "merge shopify lines to spreadsheet lines"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e4ea3e09-ab84-479f-823c-53b200dac0cb",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "15fc75c7-04a1-4e75-b691-4df45b232d6e",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Invoice waiting to be printed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        1072
+      ],
+      "id": "e3e5f609-dedd-48b5-96ab-55a9ff7b5330",
+      "name": "if completed or awaiting invoice"
+    },
+    {
+      "parameters": {
+        "content": "Now I need to turn the flattened list into an object compatible with shopify's api\n\nhttps://shopify.dev/docs/api/admin-graphql/latest/mutations/fulfillmentCreateV2",
+        "height": 576,
+        "width": 304
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        816
+      ],
+      "id": "927255b1-0f05-4a46-aded-088188522d35",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Split out the fulfilment order line items. These are items that need to be shipped (still)\n",
+        "height": 608,
+        "width": 1248
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -528,
+        976
+      ],
+      "typeVersion": 1,
+      "id": "0f14f722-3a00-4769-9c12-0931b771a28a",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "Fulfilments and fulfillment orders are different things.\n\nFulfillments are what's already been shipped.\n\n\nFulfillment orders are what needs to be sent.\n",
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1120,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "f103d9d8-bcbd-4f7a-99ac-50c0affd7665",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "33e443bf-8e66-4091-92f0-6f62e86743a3",
+              "leftValue": "={{ $json.fulfillmentStatus }}",
+              "rightValue": "UNFULFILLED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "28878f90-5cbb-43e9-b44f-475de1a2e279",
+              "leftValue": "={{ $json.fulfillmentStatus }}",
+              "rightValue": "PARTIALLY_FULFILLED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        1072
+      ],
+      "id": "281de0f7-a147-41c6-8001-fb81f4b0c47b",
+      "name": "if unfulfilled (or partially)"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        320
+      ],
+      "id": "3f837297-3cec-4311-9fc2-15594080bf4b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9df1178b-7a5d-4a07-b7db-edc9f89891e3",
+              "leftValue": "={{ $json['Despatch Date'] }}",
+              "rightValue": "={{ DateTime.now().minus(1 ,\"day\").format('yyyy-MM-dd') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "beforeOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        1072
+      ],
+      "id": "73dd20a5-ec82-4191-bb92-2ede9dbdf081",
+      "name": "if completed yesterday or earlier"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1bc6f759-fa8e-4193-9abd-5c28628f53e7",
+              "leftValue": "={{ $json.shipped_sku }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1888,
+        960
+      ],
+      "id": "d14353e8-c57d-418b-9139-65b8c90b95b9",
+      "name": "remove items already shipped"
+    },
+    {
+      "parameters": {
+        "content": "Send tracking emails = FALSE (currently) 2026-08-11",
+        "height": 112,
+        "width": 304,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2336,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "4013698c-438b-42b6-82b7-2c534955e23f",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "Send tracking emails = FALSE and should remain like that. This is for older orders that have been shipped but didn't get through the system quick enough.\n",
+        "height": 112,
+        "width": 304,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2336,
+        1248
+      ],
+      "typeVersion": 1,
+      "id": "2147d332-ffd7-4d8c-8572-e401bf8785ee",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -320,
+        576
+      ],
+      "id": "d67798ae-de29-40f1-8293-7613ad745118",
+      "name": "loop to reduce throttling"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        768
+      ],
+      "id": "f2ec8802-6c22-441e-b310-532bdc74868d",
+      "name": "Wait to reduce throttling",
+      "webhookId": "f5f7ad78-39ca-4b54-935d-24672c6741c4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3f9b672a-33a1-4335-b829-74fc346997f8",
+              "leftValue": "={{ $json.data.orders.nodes }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        576
+      ],
+      "id": "d43e71cd-f1e7-4be1-aec8-6b53220beb93",
+      "name": "if orders exist"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "base_order_ref",
+              "field2": "orderNumber"
+            },
+            {
+              "field1": "sku",
+              "field2": "shopify_sku"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        800
+      ],
+      "id": "4122567b-38d6-4745-8772-58e7c15d0de0",
+      "name": "merge in fulfillment orders"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "raw_order_ref, sku",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        800
+      ],
+      "id": "8c72d1bb-dfa0-4828-a2b9-2afc50217ffb",
+      "name": "Remove duplicate orders"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5873b572-3bc8-4073-b3d9-71fd83a96c4b",
+              "name": "raw_order_ref",
+              "value": "={{ $json.raw_order_ref }}",
+              "type": "string"
+            },
+            {
+              "id": "2d0b5573-7c6b-4825-8122-18094a0fab52",
+              "name": "base_order_ref",
+              "value": "={{ $json.base_order_ref }}",
+              "type": "number"
+            },
+            {
+              "id": "2bb01d55-fc2a-432f-91ac-cbc18e820c09",
+              "name": "shipment_part",
+              "value": "={{ $json.shipment_part }}",
+              "type": "string"
+            },
+            {
+              "id": "441b7827-4694-4aa3-9eaf-92d7e08cae04",
+              "name": "Delivery Name",
+              "value": "={{ $json[\"Delivery Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "44dfb4b7-23e9-4f29-ac4f-b078d06d0d85",
+              "name": "Status",
+              "value": "={{ $json.Status }}",
+              "type": "string"
+            },
+            {
+              "id": "95e79346-b953-41e1-9fd8-19a200988b0b",
+              "name": "MarshallingArea",
+              "value": "={{ $json.MarshallingArea }}",
+              "type": "string"
+            },
+            {
+              "id": "b3d475cf-ed76-4168-a5d2-2e77ab4cc58b",
+              "name": "Delivery Method",
+              "value": "={{ $if($json[\"Delivery Method\"].includes(\"Royal Mail\"), \"Royal Mail\", $if($json[\"Delivery Method\"].includes(\"APC\"), \"APC\", \"\")) }}",
+              "type": "string"
+            },
+            {
+              "id": "9c765b33-ab1a-4e85-9292-615cb9f45876",
+              "name": "Consignment No",
+              "value": "={{ $json[\"Consignment No\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "5058a3dc-47b6-422a-8f93-840cd6646555",
+              "name": "Anglo Code",
+              "value": "={{ $json[\"Anglo Code\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4c929c49-d508-4bf0-9bc2-789d723a541c",
+              "name": "sku",
+              "value": "={{ $json.sku }}",
+              "type": "string"
+            },
+            {
+              "id": "f6fa2e01-1f8e-4ea5-b881-c74240855171",
+              "name": "parent_sku",
+              "value": "={{ $json.parent_sku }}",
+              "type": "string"
+            },
+            {
+              "id": "66bbcafc-5d45-45ad-81e9-a52e98f1ed2a",
+              "name": "sku_matching",
+              "value": "={{ $json.sku_matching }}",
+              "type": "string"
+            },
+            {
+              "id": "454c030d-ab00-4010-95bc-8b036ea7696e",
+              "name": "fulfillmentStatus",
+              "value": "={{ $json.fulfillmentStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "9d69ae76-6275-47e9-b3d6-f9c742afa496",
+              "name": "shipped_sku",
+              "value": "={{ $json.shipped_sku }}",
+              "type": "string"
+            },
+            {
+              "id": "6628b806-332a-4b44-be00-9005d224abc0",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "8189d8c2-4f55-4820-bbb7-a04aa7ce3feb",
+              "name": "fulfillmentOrderId",
+              "value": "={{ $json.fulfillmentOrderId || $json.fulfillmentOrders }}",
+              "type": "string"
+            },
+            {
+              "id": "5bb946c1-d7eb-4c81-9c10-a7e03fe632b8",
+              "name": "shipped",
+              "value": "={{ $json.shipped || false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "8119fcba-b116-44d9-a1d2-fa862f82eefc",
+              "name": "quantity",
+              "value": "={{ $json.quantity }}",
+              "type": "number"
+            },
+            {
+              "id": "5edaf07b-792f-40c7-9103-ba26d0039538",
+              "name": "lineItemId",
+              "value": "={{ $json.lineItemId }}",
+              "type": "string"
+            },
+            {
+              "id": "8baa3975-7003-41a6-b686-0546aa6e6cba",
+              "name": "fulfillmentOrderSkuId",
+              "value": "={{ $json.fulfillmentOrderSkuId }}",
+              "type": "string"
+            },
+            {
+              "id": "0a257317-5c51-4ff2-99c3-38c7ebd04053",
+              "name": "courier_url",
+              "value": "={{ $if($json[\"Delivery Method\"]== \"APC Next Day\", \"https://apcchoice.apc-overnight.com/\", \"\") }}",
+              "type": "string"
+            },
+            {
+              "id": "f7e4a61b-6cf7-4ae7-a01f-bd2d7c26c888",
+              "name": "Despatch Date",
+              "value": "={{ $if($json['Despatch Date'].toDateTime(\"dd/MM/yyyy\").format('yyyy-MM-dd')==\"Invalid DateTime\",DateTime.now().format('yyyy-MM-dd'),$json['Despatch Date'].toDateTime(\"dd/MM/yyyy\").format('yyyy-MM-dd'))  }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1520,
+        800
+      ],
+      "id": "817468a2-73b1-4089-b775-edc3012f34c4",
+      "name": "Set required fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        1072
+      ],
+      "id": "26f3f41c-1c20-46be-bae7-58b37072436f",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.orders.nodes[0].fulfillmentOrders.nodes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        1136
+      ],
+      "id": "40e98326-0b45-4b61-8109-16cc2ec10342",
+      "name": "Split Out fulfillment orders"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9185bdab-9afc-4d57-b2f7-b95a06e4ea1e",
+              "name": "id",
+              "value": "={{ $('Loop Over Items').item.json.data.orders.nodes[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "d2c446ec-3423-4966-a0e5-8a313bb7ea84",
+              "name": "orderNumber",
+              "value": "={{ $('Loop Over Items').item.json.data.orders.nodes[0].number }}",
+              "type": "number"
+            },
+            {
+              "id": "d13b337f-4ec4-4e1f-87b4-bb784d24b0e8",
+              "name": "fulfillmentOrderId",
+              "value": "={{ $('Loop Over Items').item.json.data.orders.nodes[0].fulfillmentOrders.nodes[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "447e3ce7-a15c-40c1-8091-d92fff31d716",
+              "name": "fulfillmentLineItems",
+              "value": "={{ $json.lineItems.nodes }}",
+              "type": "array"
+            },
+            {
+              "id": "c38dd5c3-d015-45d8-a6bc-d39415ac1350",
+              "name": "fulfillmentStatus",
+              "value": "={{ $('Loop Over Items').item.json.data.orders.nodes[0].displayFulfillmentStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "6839dd1a-7c9c-48a7-9134-b1658b1e037e",
+              "name": "lineItems.nodes[0].lineItem.fulfillmentStatus",
+              "value": "={{ $json.lineItems.nodes[0].lineItem.fulfillmentStatus }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -96,
+        1136
+      ],
+      "id": "e6b6cfa3-e341-412a-a204-a03ebc78e09f",
+      "name": "Keep required data"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "fulfillmentLineItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        112,
+        1136
+      ],
+      "id": "4a268d94-a411-453a-b54d-c0aa8c022c57",
+      "name": "Split Out line items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f73eec8-816b-4f40-bc80-9a59df2cdfb5",
+              "leftValue": "={{ $json.lineItem.fulfillmentStatus }}",
+              "rightValue": "unfulfilled",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        1136
+      ],
+      "id": "5a1556f5-b5b9-469e-b022-1dde34551e9b",
+      "name": "keep unfulfilled line items"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        1360
+      ],
+      "id": "e1f7cf16-3e8f-42d2-8c04-91e63f5f6c56",
+      "name": "Set empty json",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54d0192f-4a4f-44cf-9a49-4259f0d9debb",
+              "name": "fulfillmentOrderSkuId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "463eac47-8a95-4c4d-98a5-bf145789dd19",
+              "name": "orderNumber",
+              "value": "={{ $('Keep required data').item.json.orderNumber }}",
+              "type": "number"
+            },
+            {
+              "id": "a40f7e04-fd1a-430d-8ebd-e187cc14a4a5",
+              "name": "fulfillmentOrderId",
+              "value": "={{ $('Keep required data').item.json.fulfillmentOrderId }}",
+              "type": "string"
+            },
+            {
+              "id": "ed6ef4fd-97ce-4f5c-a504-3299d4cbbb74",
+              "name": "fulfillmentStatus",
+              "value": "={{ $('Keep required data').item.json.fulfillmentStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "2406cc07-288f-480c-b4c3-80c163c2b9fc",
+              "name": "shopify_sku",
+              "value": "={{ $json.sku }}",
+              "type": "string"
+            },
+            {
+              "id": "26af368b-a388-4981-8cd5-3eabcaab0956",
+              "name": "anglo_sku",
+              "value": "={{ $json.variant.metafield?.reference?.sku }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        1136
+      ],
+      "id": "f0b5bbb0-c9e7-4b35-bbf4-32ce4c5c108d",
+      "name": "Set unfulfilled items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "13675fe2-2da5-4279-8dec-9026f50a3608",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        992
+      ],
+      "id": "e5051c52-3b47-4124-a20e-9a4cdefcb6f4",
+      "name": "Dump empty json"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2b9d81c9-e526-407d-9ad8-2ea143d2447e",
+              "leftValue": "={{ $json.MarshallingArea.includes(DateTime.now().minus(1,\"day\").format(\"c\")) == DateTime.now().minus(1,\"day\").format(\"c\")  }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1616,
+        1072
+      ],
+      "id": "8444919f-8222-45c9-b4d5-7a67c8ce882e",
+      "name": "if marshallingArea day is yesterday"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1bc6f759-fa8e-4193-9abd-5c28628f53e7",
+              "leftValue": "={{ $json.shipped_sku }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1888,
+        1216
+      ],
+      "id": "1de5d295-b091-4c24-a840-59027128fba3",
+      "name": "remove older items already shipped"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 1: Get all incoming items\nconst rows = items.map(item => item.json);\n\n\n\n// Step 2: Group by shipment (order + consignment)\nconst shipmentGroups = {};\n\nfor (const row of rows) {\n  const shipmentKey = `${row.base_order_ref}|${row.shipment_part}|${row[\"Consignment No\"]}`;\n\n  if (!shipmentGroups[shipmentKey]) {\n  \n    const trackingInfo = {\n      company: row[\"Delivery Method\"]\n    };\n  \n    // Only add number if it exists\n    if (row[\"Consignment No\"]) {\n      trackingInfo.number = row[\"Consignment No\"];\n    }\n  \n    // Only add url if it exists\n    if (row[\"courier_url\"]) {\n      trackingInfo.url = row[\"courier_url\"];\n    }\n  \n    shipmentGroups[shipmentKey] = {\n      trackingInfo,\n      fulfillmentOrders: {}\n    };\n  }\n\n  const group = shipmentGroups[shipmentKey];\n\n  // Step 3: Group inside shipment by fulfillmentOrderId\n  if (!group.fulfillmentOrders[row.fulfillmentOrderId]) {\n    group.fulfillmentOrders[row.fulfillmentOrderId] = [];\n  }\n\n  // Step 4: Push line item into correct fulfillment order\n  group.fulfillmentOrders[row.fulfillmentOrderId].push({\n    id: row.fulfillmentOrderSkuId, // replace with fulfillmentOrderLineItemId when available\n    quantity: row.quantity\n  });\n}\n\n// Step 5: Convert grouped object into Shopify structure\nconst output = [];\n\nfor (const shipmentKey in shipmentGroups) {\n  const shipment = shipmentGroups[shipmentKey];\n\n  const lineItemsByFulfillmentOrder = [];\n\n  for (const fulfillmentOrderId in shipment.fulfillmentOrders) {\n    lineItemsByFulfillmentOrder.push({\n      fulfillmentOrderId,\n      fulfillmentOrderLineItems: shipment.fulfillmentOrders[fulfillmentOrderId]\n    });\n  }\n\n  output.push({\n    json: {\n      fulfillment: {\n        trackingInfo: shipment.trackingInfo,\n        notifyCustomer: false,\n        lineItemsByFulfillmentOrder\n      }\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        944
+      ],
+      "id": "09ce46ef-bc96-427c-a769-86bfd29aa96d",
+      "name": "Unflatten line items into object - send tracking"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 1: Get all incoming items\nconst rows = items.map(item => item.json);\n\n\n\n// Step 2: Group by shipment (order + consignment)\nconst shipmentGroups = {};\n\nfor (const row of rows) {\n  const shipmentKey = `${row.base_order_ref}|${row.shipment_part}|${row[\"Consignment No\"]}`;\n\n  if (!shipmentGroups[shipmentKey]) {\n  \n    const trackingInfo = {\n      company: row[\"Delivery Method\"]\n    };\n  \n    // Only add number if it exists\n    if (row[\"Consignment No\"]) {\n      trackingInfo.number = row[\"Consignment No\"];\n    }\n  \n    // Only add url if it exists\n    if (row[\"courier_url\"]) {\n      trackingInfo.url = row[\"courier_url\"];\n    }\n  \n    shipmentGroups[shipmentKey] = {\n      trackingInfo,\n      fulfillmentOrders: {}\n    };\n  }\n\n  const group = shipmentGroups[shipmentKey];\n\n  // Step 3: Group inside shipment by fulfillmentOrderId\n  if (!group.fulfillmentOrders[row.fulfillmentOrderId]) {\n    group.fulfillmentOrders[row.fulfillmentOrderId] = [];\n  }\n\n  // Step 4: Push line item into correct fulfillment order\n  group.fulfillmentOrders[row.fulfillmentOrderId].push({\n    id: row.fulfillmentOrderSkuId, // replace with fulfillmentOrderLineItemId when available\n    quantity: row.quantity\n  });\n}\n\n// Step 5: Convert grouped object into Shopify structure\nconst output = [];\n\nfor (const shipmentKey in shipmentGroups) {\n  const shipment = shipmentGroups[shipmentKey];\n\n  const lineItemsByFulfillmentOrder = [];\n\n  for (const fulfillmentOrderId in shipment.fulfillmentOrders) {\n    lineItemsByFulfillmentOrder.push({\n      fulfillmentOrderId,\n      fulfillmentOrderLineItems: shipment.fulfillmentOrders[fulfillmentOrderId]\n    });\n  }\n\n  output.push({\n    json: {\n      fulfillment: {\n        trackingInfo: shipment.trackingInfo,\n        notifyCustomer: false,\n        lineItemsByFulfillmentOrder\n      }\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        1232
+      ],
+      "id": "8a90edd3-1b8f-4952-b118-f25a2f3028ba",
+      "name": "Unflatten line items into object - don't send tracking"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get rows from sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter out test orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the latest tracking spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Set the new file name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the new file name": {
+      "main": [
+        [
+          {
+            "node": "Upload to onedrive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to onedrive": {
+      "main": [
+        [
+          {
+            "node": "Get rows from sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter out test orders": {
+      "main": [
+        [
+          {
+            "node": "Keep and trim what's needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep and trim what's needed": {
+      "main": [
+        [
+          {
+            "node": "group lines by order",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "merge shopify lines to spreadsheet lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "group lines by order": {
+      "main": [
+        [
+          {
+            "node": "loop to reduce throttling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get matching shopify orders": {
+      "main": [
+        [
+          {
+            "node": "Wait to reduce throttling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over orders": {
+      "main": [
+        [
+          {
+            "node": "merge shopify lines to spreadsheet lines",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "split by line item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "split by line item": {
+      "main": [
+        [
+          {
+            "node": "flatten orders into item rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "flatten orders into item rows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge shopify lines to spreadsheet lines": {
+      "main": [
+        [
+          {
+            "node": "merge in fulfillment orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if completed or awaiting invoice": {
+      "main": [
+        [
+          {
+            "node": "if completed yesterday or earlier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "if unfulfilled (or partially)": {
+      "main": [
+        [
+          {
+            "node": "if marshallingArea day is yesterday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get the latest tracking spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if completed yesterday or earlier": {
+      "main": [
+        [
+          {
+            "node": "if unfulfilled (or partially)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remove items already shipped": {
+      "main": [
+        [
+          {
+            "node": "Unflatten line items into object - send tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loop to reduce throttling": {
+      "main": [
+        [
+          {
+            "node": "if orders exist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get matching shopify orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait to reduce throttling": {
+      "main": [
+        [
+          {
+            "node": "loop to reduce throttling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if orders exist": {
+      "main": [
+        [
+          {
+            "node": "Loop Over orders",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge in fulfillment orders": {
+      "main": [
+        [
+          {
+            "node": "Remove duplicate orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove duplicate orders": {
+      "main": [
+        [
+          {
+            "node": "Set required fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set required fields": {
+      "main": [
+        [
+          {
+            "node": "if completed or awaiting invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Dump empty json",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Out fulfillment orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out fulfillment orders": {
+      "main": [
+        [
+          {
+            "node": "Keep required data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep required data": {
+      "main": [
+        [
+          {
+            "node": "Split Out line items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out line items": {
+      "main": [
+        [
+          {
+            "node": "keep unfulfilled line items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "keep unfulfilled line items": {
+      "main": [
+        [
+          {
+            "node": "Set unfulfilled items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set empty json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set empty json": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set unfulfilled items": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dump empty json": {
+      "main": [
+        [
+          {
+            "node": "merge in fulfillment orders",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "if marshallingArea day is yesterday": {
+      "main": [
+        [
+          {
+            "node": "remove items already shipped",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "remove older items already shipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remove older items already shipped": {
+      "main": [
+        [
+          {
+            "node": "Unflatten line items into object - don't send tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unflatten line items into object - send tracking": {
+      "main": [
+        [
+          {
+            "node": "add shipping update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unflatten line items into object - don't send tracking": {
+      "main": [
+        [
+          {
+            "node": "add shipping update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "QkXnesMJSlhuiqJy",
+    "timeSavedPerExecution": 60
+  },
+  "versionId": "25bf7fbb-8d3e-42d2-afe5-e362a4f366ad",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d3f5c437e907e17e2ab95e1b5e614fbcb24292dda197df94ecadff84bc920705"
+  },
+  "nodeGroups": [],
+  "id": "HrZM9yworYYiDVYG8ngUX",
+  "tags": []
+}

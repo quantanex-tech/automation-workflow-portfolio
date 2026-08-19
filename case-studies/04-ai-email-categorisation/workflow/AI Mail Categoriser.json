@@ -1,0 +1,776 @@
+{
+  "name": "AI Mail Categoriser",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "output": "fields",
+        "fields": [
+          "from",
+          "subject",
+          "bodyPreview",
+          "body",
+          "webLink",
+          "categories",
+          "receivedDateTime"
+        ],
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "foldersToInclude": [
+                "AAMkAGU2OTIwNTc0LWZhMDQtNGY1Yy1hYmJjLWU5ODFhNjgxMTMyNAAuAAAAAAAgurknc0pTRrYVaAkSPd5gAQBiEL1vvOgFSaYA76EJ6ZmLAAAAAAEMAAA="
+              ]
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -144
+      ],
+      "id": "2c098129-262c-44c1-b2a0-4766cfdedfc1",
+      "name": "Microsoft Outlook",
+      "webhookId": "8df8537e-66c1-4cb2-94e0-fab102391f02",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "9wQzdP6bXBm4dBNp",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI-2025-04-14"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Provide a category for the type of email based on the preview content provided below. Limit the categories specifically to one of the following:\n\n- Product Information Inquiry\n- Order Status & Delivery Tracking\n- Cancellations & Refunds\n- New Orders & General Order Inquiries\n- Delivery Instructions & Preferences\n- Product & Order Issues\n\nEmail content preview:\n {{ $json.bodyPreview }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        960,
+        432
+      ],
+      "id": "8795c9e8-e1b1-45b5-bae1-ada8fa452b88",
+      "name": "OpenAI",
+      "executeOnce": false,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "openAiApi": {
+          "id": "y3u55C4rDvJZuFiZ",
+          "name": "OpenAi account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        368,
+        128
+      ],
+      "id": "90c6dd1b-3a3d-40d3-93fe-a5f6c7c8dce1",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "triggerAtHour": 17,
+              "triggerAtMinute": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        -144
+      ],
+      "id": "b8b5aa02-1b81-4e94-8beb-6e8a63a9feb2",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "source": "googleSheets",
+        "documentId": {
+          "__rl": true,
+          "value": "15r3vIqoYkSpexU6EFK_MYCA8rQSn5FLjNLa2WTVrK_I",
+          "mode": "list",
+          "cachedResultName": "AI Email Categorisation Evaluation Data",
+          "cachedResultUrl": "https://[redacted-resource]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://[redacted-resource]/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        }
+      },
+      "type": "n8n-nodes-base.evaluationTrigger",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        128
+      ],
+      "id": "0edab954-ba62-4748-bd66-3ca1d2523d30",
+      "name": "Fetch evaluation data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yMyLWb7bEnr65624",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "checkIfEvaluating"
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        672,
+        80
+      ],
+      "id": "20af9feb-bedc-4814-b575-3f1fefebd3a3",
+      "name": "Check if evaluating"
+    },
+    {
+      "parameters": {
+        "source": "googleSheets",
+        "documentId": {
+          "__rl": true,
+          "value": "15r3vIqoYkSpexU6EFK_MYCA8rQSn5FLjNLa2WTVrK_I",
+          "mode": "list",
+          "cachedResultName": "AI Email Categorisation Evaluation Data",
+          "cachedResultUrl": "https://[redacted-resource]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://[redacted-resource]/edit#gid=0"
+        },
+        "outputs": {
+          "values": [
+            {
+              "outputName": "actual_category",
+              "outputValue": "={{ $json['AI category'][0] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        928,
+        -96
+      ],
+      "id": "188e5690-6e04-40eb-b408-b2375426747d",
+      "name": "Set outputs",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yMyLWb7bEnr65624",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "setMetrics",
+        "metric": "categorization",
+        "expectedAnswer": "={{ $('Fetch evaluation data').item.json.expected_output_category }}",
+        "actualAnswer": "={{ $json['AI category'][0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        1168,
+        -96
+      ],
+      "id": "216e43ce-aa4c-4572-89d9-813fc40d00f1",
+      "name": "Set metrics"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "031e4b6b-9f3e-42aa-8083-7e5f900756fd",
+              "name": "from name",
+              "value": "={{ $json['from name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "79fdf82d-2fff-4abe-94a8-cde1744ceae8",
+              "name": "from address",
+              "value": "={{ $json['from address'] }}",
+              "type": "string"
+            },
+            {
+              "id": "31c3e6ef-7f5c-48a0-85c3-52f7d74ab9aa",
+              "name": "email preview",
+              "value": "={{ $json[\"email preview\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "52177fba-cd61-47c9-88f2-83ecc73e80b5",
+              "name": "AI category",
+              "value": "=[\"{{ $json[\"AI category\"] }}\"]",
+              "type": "array"
+            },
+            {
+              "id": "f44018ee-956b-4627-a086-1b9ea3b78342",
+              "name": "webLink",
+              "value": "={{ $json.webLink }}",
+              "type": "string"
+            },
+            {
+              "id": "f2e91335-a33f-4c83-85cd-4eee47e98c07",
+              "name": "email_id",
+              "value": "={{ $json.email_id }}",
+              "type": "string"
+            },
+            {
+              "id": "06fedc9f-6518-4950-9024-04fb568c69e0",
+              "name": "date received",
+              "value": "={{ $('Loop Over Items').item.json['date received'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1168,
+        96
+      ],
+      "id": "5cae6ed9-f86f-4c59-a62c-ce4f4c012fe3",
+      "name": "Set the data we want"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $json.email_id }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "categories": "={{ $json['AI category'] }}"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        -112
+      ],
+      "id": "264bdaaa-3885-4b0c-b62a-feb939a913c2",
+      "name": "Update each email",
+      "webhookId": "d1d536bc-35a3-4733-b03e-f706f2160201",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "9wQzdP6bXBm4dBNp",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "fileName": "=Emails categorised {{ DateTime.now().format('yyyy-MM-dd hh:mm') }}.xlsx"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        96
+      ],
+      "id": "7cd833fe-8c4f-429a-a381-c29555f2a7ce",
+      "name": "Create excel report"
+    },
+    {
+      "parameters": {
+        "sendTo": "[redacted-data]",
+        "subject": "Email Inbox Categorisation & Export",
+        "message": "Hi,\n<br>\nHere's the latest export from Outlook. The emails have also been categorised by AI.\n<br>\nThanks\n<br><br>\nPaul",
+        "options": {
+          "appendAttribution": true,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "ccList": "paul@quantanex.tech"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1616,
+        96
+      ],
+      "id": "d94809aa-bb66-48ef-9981-783558781471",
+      "name": "Email daily report",
+      "webhookId": "7f63fb83-4628-4099-95ee-f3d336214da1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mfThzrvoCL4OoyFc",
+          "name": "Gmail account July 2024"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "031e4b6b-9f3e-42aa-8083-7e5f900756fd",
+              "name": "from name",
+              "value": "={{ $('Loop Over Items').item.json.from.emailAddress.name }}",
+              "type": "string"
+            },
+            {
+              "id": "79fdf82d-2fff-4abe-94a8-cde1744ceae8",
+              "name": "from address",
+              "value": "={{ $('Loop Over Items').item.json.from.emailAddress.address }}",
+              "type": "string"
+            },
+            {
+              "id": "31c3e6ef-7f5c-48a0-85c3-52f7d74ab9aa",
+              "name": "email preview",
+              "value": "={{ $('Loop Over Items').item.json.bodyPreview }}",
+              "type": "string"
+            },
+            {
+              "id": "52177fba-cd61-47c9-88f2-83ecc73e80b5",
+              "name": "AI category",
+              "value": "=[\"{{ $json.categories[0] }}\"]",
+              "type": "array"
+            },
+            {
+              "id": "f44018ee-956b-4627-a086-1b9ea3b78342",
+              "name": "webLink",
+              "value": "={{ $('Loop Over Items').item.json.webLink }}",
+              "type": "string"
+            },
+            {
+              "id": "f2e91335-a33f-4c83-85cd-4eee47e98c07",
+              "name": "email_id",
+              "value": "={{ $('Loop Over Items').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "599e1e96-e1df-4436-bc7c-ead4194af89c",
+              "name": "date received",
+              "value": "={{ $('Loop Over Items').item.json.receivedDateTime }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        224
+      ],
+      "id": "38686f78-56dd-42a5-b3a5-48e3e1e51c69",
+      "name": "Preserve existing categories"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "031e4b6b-9f3e-42aa-8083-7e5f900756fd",
+              "name": "from name",
+              "value": "={{ $('Loop Over Items').item.json.from.emailAddress.name }}",
+              "type": "string"
+            },
+            {
+              "id": "79fdf82d-2fff-4abe-94a8-cde1744ceae8",
+              "name": "from address",
+              "value": "={{ $('Loop Over Items').item.json.from.emailAddress.address }}",
+              "type": "string"
+            },
+            {
+              "id": "31c3e6ef-7f5c-48a0-85c3-52f7d74ab9aa",
+              "name": "email preview",
+              "value": "={{ $('Loop Over Items').item.json.bodyPreview }}",
+              "type": "string"
+            },
+            {
+              "id": "52177fba-cd61-47c9-88f2-83ecc73e80b5",
+              "name": "AI category",
+              "value": "=[\"{{ $json.message.content.category }}\"]",
+              "type": "array"
+            },
+            {
+              "id": "f44018ee-956b-4627-a086-1b9ea3b78342",
+              "name": "webLink",
+              "value": "={{ $('Loop Over Items').item.json.webLink }}",
+              "type": "string"
+            },
+            {
+              "id": "f2e91335-a33f-4c83-85cd-4eee47e98c07",
+              "name": "email_id",
+              "value": "={{ $('Loop Over Items').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "526b7274-3314-42b8-9cf5-caa56041f9f1",
+              "name": "date received",
+              "value": "={{ $('Loop Over Items').item.json.receivedDateTime }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        432
+      ],
+      "id": "ece185cf-7479-4667-9202-d089a6a1060c",
+      "name": "Set new categories"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ade8d609-271e-4d89-bcce-d516fd2664eb",
+              "leftValue": "={{ $json.categories }}",
+              "rightValue": "Product Information/Inquiry",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "80c5ea3b-b9d2-4fdb-a477-59e1ea02b471",
+              "leftValue": "={{ $json.categories }}",
+              "rightValue": "Order Status & Delivery Tracking",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "837afeb8-18e9-4bd0-bbff-b922330c20ef",
+              "leftValue": "={{ $json.categories }}",
+              "rightValue": "Cancellations & Refunds",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "a1084e1c-ed11-4eeb-b488-18198661003e",
+              "leftValue": "={{ $json.categories }}",
+              "rightValue": "New Orders & General Inquiries",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "482424f2-5545-468b-bba3-9dcfc704fe01",
+              "leftValue": "={{ $json.categories }}",
+              "rightValue": "Delivery Instructions & Preferences",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "0cd33cee-f532-463a-bd14-65dacbecc758",
+              "leftValue": "={{ $json.categories }}",
+              "rightValue": "Product & Order Issues",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        240
+      ],
+      "id": "7e906045-93e0-4f59-a42f-4caaf137ed97",
+      "name": "if previously categorised"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Microsoft Outlook": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Set new categories",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Check if evaluating",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "if previously categorised",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch evaluation data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if evaluating": {
+      "main": [
+        [
+          {
+            "node": "Set outputs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set the data we want",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set outputs": {
+      "main": [
+        [
+          {
+            "node": "Set metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the data we want": {
+      "main": [
+        [
+          {
+            "node": "Create excel report",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update each email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create excel report": {
+      "main": [
+        [
+          {
+            "node": "Email daily report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve existing categories": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set new categories": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if previously categorised": {
+      "main": [
+        [
+          {
+            "node": "Preserve existing categories",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "QkXnesMJSlhuiqJy",
+    "executionTimeout": -1,
+    "availableInMCP": false,
+    "timeSavedPerExecution": 60
+  },
+  "versionId": "974d27a4-9d1a-4a61-b388-4b7c58d1f22b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d3f5c437e907e17e2ab95e1b5e614fbcb24292dda197df94ecadff84bc920705"
+  },
+  "nodeGroups": [],
+  "id": "hOLrsmBdy8INoppm",
+  "tags": [
+    {
+      "updatedAt": "2024-05-03T14:56:49.987Z",
+      "createdAt": "2024-05-03T14:56:49.987Z",
+      "id": "eKwYcWseyjAI5qba",
+      "name": "OT"
+    },
+    {
+      "updatedAt": "2025-08-28T11:56:45.847Z",
+      "createdAt": "2025-08-28T11:56:45.847Z",
+      "id": "TDkgikLfviqUOJwm",
+      "name": "Outlook"
+    },
+    {
+      "updatedAt": "2025-08-28T11:56:49.118Z",
+      "createdAt": "2025-08-28T11:56:49.118Z",
+      "id": "vvpsyKvEIo3LNGzj",
+      "name": "AI"
+    }
+  ]
+}

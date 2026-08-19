@@ -1,12 +1,12 @@
 # Voice agent appointment booking
 
-A technical demo that starts outbound AI voice calls, processes asynchronous call results and creates a calendar appointment when the conversation meets the success criteria.
+A simple voice agent that starts outbound AI voice calls, processes asynchronous call results and creates a calendar appointment when the conversation meets the success criteria.
 
 ## Snapshot
 
 | | |
 |---|---|
-| Type | Technical demo |
+| Type | Voice Agent |
 | My role | Designed and built from scratch |
 | Main tools | n8n, Vapi, Google Sheets, Google Calendar, webhooks and REST APIs |
 | Primary pattern | Outbound request plus asynchronous callback |
@@ -16,11 +16,11 @@ A technical demo that starts outbound AI voice calls, processes asynchronous cal
 
 Voice-agent platforms handle the conversation, but a useful business workflow must also prepare the call, pass the right context, wait for the result and turn the outcome into structured operational data.
 
-The demo explores a common sales or service pattern: call a contact, collect appointment details, book the meeting and record the transcript and summary. Failed or incomplete calls should be visible rather than treated as successful.
+The workflow uses a common sales or service pattern: call a contact, collect appointment details, book the meeting and record the transcript and summary. Failed or incomplete calls should be visible rather than treated as successful.
 
 ## The approach
 
-The workflow reads test contacts from a spreadsheet and processes them in a loop. It sends a call request to the Vapi API with contact-specific variables and then waits for a webhook callback.
+The workflow reads contacts from a spreadsheet and processes them in a loop. It sends a call request to the Vapi API with contact-specific variables and then waits for a webhook callback.
 
 The callback is evaluated against a success condition. A successful result creates a calendar event and writes the booking status, transcript, summary and meeting details back to the source data. A failed result follows a separate update path.
 
@@ -61,20 +61,14 @@ A standalone Mermaid source is available in [architecture.mmd](architecture.mmd)
 
 ## Result
 
-The demo proves the integration pattern needed to connect a voice platform with operational systems. It covers the full path from source record to call, callback, appointment and structured post-call data.
+The workflow proves the integration pattern needed to connect a voice platform with operational systems. It covers the full path from source record to call, callback, appointment and structured post-call data.
 
 ## Related Twilio work
 
-I have also built a smaller Twilio and n8n workflow that captures voicemail and surfaces it in Outlook for follow-up. A screenshot can be added as supporting evidence without turning it into a separate case study.
+I have also built a smaller Twilio and n8n workflow that captures voicemail and surfaces it in Outlook for follow-up. 
 
 ## What I built
 
-I designed and built the Vapi API calls, callback webhook, success branching, Google Sheets state updates and calendar-booking path. AI coding tools were used as a supporting development aid where needed, with manual review and testing.
+I designed and built the Vapi API calls, callback webhook, success branching, Google Sheets state updates and calendar-booking path. 
 
-## Evidence to add
 
-See [assets/README.md](assets/README.md). Use synthetic phone numbers and a dedicated test calendar for all public screenshots or recordings.
-
-## Confidentiality
-
-Remove real phone numbers, assistant IDs, phone-number IDs, calendar IDs, meeting links, transcripts and API credential references. Do not publish recordings of real people.

@@ -10,11 +10,11 @@ A production n8n workflow that turns supplier tracking files into matched, valid
 | My role | Designed and built from scratch |
 | Main tools | n8n, Shopify, OneDrive, spreadsheets, JavaScript and APIs |
 | Primary pattern | Scheduled batch processing with validation and exception routes |
-| Data shown | Synthetic or anonymised |
+
 
 ## The problem
 
-Tracking information arrived in supplier spreadsheets rather than directly through a consistent order API. The data had to be matched against ecommerce orders and line items before a customer-facing shipment update could be created.
+Tracking information arrived in supplier spreadsheets rather than directly through a consistent order API. The data had to be matched against ecommerce orders and line items before a customer-facing shipment update could be created. Rules required for mapping inconsistent column data into usable information.
 
 A simple order-number lookup was not enough. Orders could contain several items, ship in parts, remain unfulfilled or reach a status where an update should not be applied. Duplicate rows and delayed files also created a risk of repeating an update.
 
@@ -62,16 +62,13 @@ A standalone Mermaid source is available in [architecture.mmd](architecture.mmd)
 
 ## Result
 
-The workflow reduced manual reconciliation between supplier tracking files and Shopify. It also made shipment updates more consistent by applying the same matching and status rules to every file.
+The workflow reduced manual reconciliation between supplier tracking files and Shopify. It also made shipment updates more consistent by applying the same matching and status rules to every file. The workflow also provided the trigger for sending shipment notifications to customers directly from Shopify.
 
 ## What I built
 
 I designed the workflow structure, matching logic, Shopify integration, status rules, data transformations and exception handling. I used AI coding tools to help with parts of the JavaScript in Code nodes, then reviewed, tested and adapted the code in the context of the full workflow.
 
-## Evidence to add
+## Evidence
 
-See [assets/README.md](assets/README.md) for the recommended screenshots. A sanitised workflow export can be placed in [workflow/](workflow/) after manual review.
-
-## Confidentiality
-
-Supplier names, client identifiers, live order data, file locations, webhook details and internal field names should be removed or replaced before publication. The public case study should explain the design without exposing the exact production environment.
+![Workflow Overview](./assets/workflow-overview.png)
+![Matching and Status Logic](./assets/matching-and-status-logic.png)

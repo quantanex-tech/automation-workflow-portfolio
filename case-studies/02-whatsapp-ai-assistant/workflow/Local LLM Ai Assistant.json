@@ -1,0 +1,741 @@
+{
+  "name": "Local LLM Ai Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "45ae7bae-87c1-4735-8503-b1c9c4da6784",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        32
+      ],
+      "id": "4a582ac4-7160-4f7b-9c62-710edd2c522d",
+      "name": "Webhook",
+      "webhookId": "45ae7bae-87c1-4735-8503-b1c9c4da6784"
+    },
+    {
+      "parameters": {
+        "url": "http://[redacted-resource]/api/tags",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        96,
+        480
+      ],
+      "id": "724d962f-7a47-4ceb-9129-e99f452b6076",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:20b",
+        "options": {
+          "keepAlive": "15m"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        384
+      ],
+      "id": "32218e09-ff2b-417d-9e57-588b184dc0d8",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "ngD194rBrQi5H7xf",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message_text }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant called Jarvis. Keep response messages short like they are responses to a simple text messages. Plain text responses only. No markdown."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1424,
+        128
+      ],
+      "id": "27a520c3-f964-4cc3-aaea-783e5e93b51e",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "main",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1408,
+        384
+      ],
+      "id": "0d558025-591d-4499-84cc-5c506023e598",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "vA2zrj62cQ3BZDka",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "5fv1rk4r0f9t591a7lccso6tgc@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Claudi/Paul"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1664,
+        560
+      ],
+      "id": "54a0b804-4a0f-4d21-ad6e-22b1f2677d64",
+      "name": "Get many events in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "OXODmUYjCaHbnTdI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 25,
+        "filters": {
+          "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search', ``, 'string') }}",
+          "receivedAfter": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_After', ``, 'string') }}",
+          "receivedBefore": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_Before', ``, 'string') }}",
+          "sender": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        2016,
+        560
+      ],
+      "id": "d0ea54b4-1f98-476b-b418-69af29a367d3",
+      "name": "Get many messages in Gmail",
+      "webhookId": "f7c16770-bc42-405d-be1b-66f6ea92d361",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Sq2ybirgdf7dCU0Y",
+          "name": "Quantanex Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "2360730267",
+          "mode": "list",
+          "cachedResultName": "Inbox"
+        },
+        "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Content', ``, 'string') }}",
+        "options": {
+          "dueString": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Due_String', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.todoistTool",
+      "typeVersion": 2.1,
+      "position": [
+        1840,
+        560
+      ],
+      "id": "65a693e1-2b82-46d0-ac35-0cd27e7f44b6",
+      "name": "Create a task in Todoist",
+      "credentials": {
+        "todoistApi": {
+          "id": "uHpkNrQfY7LRvbuK",
+          "name": "Todoist account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "5fv1rk4r0f9t591a7lccso6tgc@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Claudi/Paul"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1584,
+        704
+      ],
+      "id": "95293d3c-3919-4afb-bccc-5db7ef27d4bd",
+      "name": "Update an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "OXODmUYjCaHbnTdI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "5fv1rk4r0f9t591a7lccso6tgc@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Claudi/Paul"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        704
+      ],
+      "id": "7d305f10-63a2-4856-a112-c9461acb4090",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "OXODmUYjCaHbnTdI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "any_event"
+        ],
+        "watchWorkspace": true,
+        "downloadFiles": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        624,
+        224
+      ],
+      "id": "4bf68341-0b75-4849-88bd-86d88e4a535a",
+      "name": "Slack Trigger",
+      "webhookId": "1d5a4aea-aae7-49a3-9c31-91e8829bd864",
+      "credentials": {
+        "slackApi": {
+          "id": "QP0GR7ZeLyhKV8Vg",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('Slack Trigger').item.json.channel }}",
+          "mode": "id"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "mrkdwn": true
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2080,
+        128
+      ],
+      "id": "9d4e5777-2be1-4f17-8d5c-51b4cb160a1b",
+      "name": "Send a message",
+      "webhookId": "c0a2a83a-4f10-4290-9841-7b602b5204a0",
+      "credentials": {
+        "slackApi": {
+          "id": "QP0GR7ZeLyhKV8Vg",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Set message and node name').item.json.prevNode }}",
+                    "rightValue": "Slack",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "65162422-fb38-4de5-981a-887423ef52ba"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Slack"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e68f0a1a-fb1c-4454-ac8b-cec6bade6ecf",
+                    "leftValue": "={{ $('Set message and node name').item.json.prevNode }}",
+                    "rightValue": "WhatsApp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "WhatsApp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1792,
+        128
+      ],
+      "id": "666d2e16-eccf-496f-b283-1917f832db51",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://[redacted-resource]/message/sendText/whatsapp-paul",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "447456525020"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2096,
+        352
+      ],
+      "id": "9f3ae85a-adbf-4b3c-b020-1c8532dd593d",
+      "name": "Reply on WhatsApp",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mzAS6WoSWZnTjOIJ",
+          "name": "Evolution WhatsApp API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {
+          "filter": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Filter', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.todoistTool",
+      "typeVersion": 2.1,
+      "position": [
+        1936,
+        704
+      ],
+      "id": "d5efda84-2034-49e6-893a-0390dba64c7c",
+      "name": "Get many tasks in Todoist",
+      "credentials": {
+        "todoistApi": {
+          "id": "uHpkNrQfY7LRvbuK",
+          "name": "Todoist account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dff2f6d9-253c-41da-98c2-169260f87c62",
+              "leftValue": "={{ $json.body.data.key.fromMe }}",
+              "rightValue": "ACF9CD153B91A8C7CAE1ADCC67EEFD72",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0e1b1957-e070-482b-8578-b44cad3e01c2",
+              "leftValue": "={{ $json.body.data.key.remoteJid }}",
+              "rightValue": "[redacted-resource]",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "76b73981-4459-487d-befe-e5d5a39bf16c",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "messages.upsert",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        32
+      ],
+      "id": "7ef51168-6bac-42c4-831f-acbd19b80b75",
+      "name": "WhatsApp"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6ead078e-0ef5-4300-a3a0-bdb2f32c4c5f",
+              "leftValue": "={{ $json.user }}",
+              "rightValue": "U08BXD0R38C",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        224
+      ],
+      "id": "6888efed-dbd0-4e56-9998-898f454f00c8",
+      "name": "Slack"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8037378-9350-4963-b360-cfbca84b4208",
+              "name": "=message_text",
+              "value": "={{ $if($prevNode.name===\"WhatsApp\",$json.body.data.message.conversation, $json.text ) }}",
+              "type": "string"
+            },
+            {
+              "id": "27a1079b-28b3-4d93-8102-ef95c33a8cf9",
+              "name": "id",
+              "value": "={{ $if($prevNode.name===\"WhatsApp\", $json.body.data.key.remoteJid, $json.channel) }}",
+              "type": "string"
+            },
+            {
+              "id": "eaf77de4-772e-4fa1-8793-e088b86af1bf",
+              "name": "prevNode",
+              "value": "={{ $prevNode.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        128
+      ],
+      "id": "74e23166-0332-4a2e-bf6f-fcd07eedaadb",
+      "name": "Set message and node name"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a task in Todoist": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply on WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many tasks in Todoist": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Set message and node name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack": {
+      "main": [
+        [
+          {
+            "node": "Set message and node name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set message and node name": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/London",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "QkXnesMJSlhuiqJy",
+    "executionTimeout": -1,
+    "availableInMCP": false,
+    "timeSavedPerExecution": 10
+  },
+  "versionId": "bd39be2c-6090-4365-9dc1-6976a69357a9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d3f5c437e907e17e2ab95e1b5e614fbcb24292dda197df94ecadff84bc920705"
+  },
+  "nodeGroups": [],
+  "id": "kkhnN5sBGMSRyAPC",
+  "tags": []
+}
