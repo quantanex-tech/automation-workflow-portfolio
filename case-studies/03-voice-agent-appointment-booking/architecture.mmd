@@ -1,0 +1,9 @@
+flowchart LR
+    A[Contact list] --> B[n8n batch processor]
+    B --> C[Vapi call API]
+    C --> D[AI voice call]
+    D --> E[Vapi callback webhook]
+    E --> F{Successful outcome?}
+    F -->|Yes| G[Create calendar event]
+    G --> H[Store status, summary and transcript]
+    F -->|No| I[Mark failed or incomplete]

@@ -1,0 +1,12 @@
+flowchart LR
+    A[WhatsApp via Evolution API] --> B[n8n webhook]
+    S[Slack trigger] --> C[Normalise message]
+    B --> C
+    C --> D[AI agent]
+    D <--> M[(Postgres memory)]
+    D --> E[Gmail tools]
+    D --> F[Google Calendar tools]
+    D --> G[Todoist tools]
+    D --> H{Response channel}
+    H --> I[WhatsApp reply]
+    H --> J[Slack reply]

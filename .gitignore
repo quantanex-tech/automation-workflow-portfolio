@@ -1,0 +1,22 @@
+# Local and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# Raw or unsanitised exports must never be committed
+raw/
+private/
+unsanitised/
+*.raw.json
+*.private.json
+*.unsanitised.json
+
+# Local audit output
+portfolio-audit-report.txt
+
+# Python cache files
+__pycache__/
+*.pyc

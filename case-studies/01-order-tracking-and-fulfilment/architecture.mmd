@@ -1,0 +1,9 @@
+flowchart LR
+    A[Supplier tracking file] --> B[OneDrive]
+    B --> C[n8n ingestion]
+    C --> D[Normalise and group rows]
+    D --> E[Fetch and match Shopify orders]
+    E --> F{Order and fulfilment checks}
+    F -->|Valid update| G[Create or update tracking]
+    F -->|Exception| H[Review path]
+    G --> I[Record processed status]

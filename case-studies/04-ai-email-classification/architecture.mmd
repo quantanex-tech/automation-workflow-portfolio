@@ -1,0 +1,10 @@
+flowchart LR
+    A[Microsoft Outlook mailbox] --> B[n8n scheduled fetch]
+    B --> C[Batch and deduplicate]
+    C --> D{Preview sufficient?}
+    D -->|Yes| E[LLM classification]
+    D -->|No| F[Classify full body]
+    E --> G[Validate allowed category]
+    F --> G
+    G --> H[Apply or export result]
+    G --> I[Error or review path]
