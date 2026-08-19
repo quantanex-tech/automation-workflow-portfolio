@@ -10,7 +10,7 @@ An operational n8n workflow that retrieves customer-service email, classifies ea
 | My role | Designed and built from scratch |
 | Main tools | n8n, Microsoft Outlook, OpenAI, Nextcloud and spreadsheets |
 | Primary pattern | Scheduled batch classification with retries and validation |
-| Data shown | Synthetic or anonymised |
+
 
 ## The problem
 
@@ -22,7 +22,7 @@ The workflow needed a controlled output rather than an unconstrained AI summary.
 
 The workflow retrieves email fields from Outlook and processes messages in a loop. An OpenAI step classifies each message against a defined list of customer-service categories and returns structured JSON.
 
-Where the preview is insufficient, the workflow can use the full email body. Results are merged with existing tracking data, duplicates are removed and the output is written back to the operational process or exported for review.
+Where the preview is insufficient, the workflow can use the full email body. Results are merged with existing tracking data, duplicates are removed and the output is written back to the operational process or exported for review. Evaluation test data used to measure the quality of the output against human-categorised emails provided metrics for improving the categorisation prompt on a lower cost LLM.
 
 ## Architecture
 
@@ -66,12 +66,13 @@ The wider email classification and triage automation reduced manual review effor
 
 ## What I built
 
-I designed the Outlook retrieval, batching, classification taxonomy, model prompts, structured outputs, retry behaviour, duplicate checks and reporting path. I used AI coding tools to assist with small code and expression tasks, then reviewed and tested the result.
+I designed the Outlook retrieval, batching, classification taxonomy, model prompts, structured outputs, retry behaviour, duplicate checks and reporting path. 
 
-## Evidence to add
+## Evidence 
 
-See [assets/README.md](assets/README.md). Screenshots should use invented email addresses, subjects and message text.
+Workflow Overview
+![Workflow Overview](./assets/workflow-overview.png)
 
-## Confidentiality
+Evaluation Data
+![Evaluation Data](./assets/evaluation-data.png)
 
-Remove mailbox and folder IDs, account names, real message bodies, senders, tracking files, client names and credential references. A synthetic message set is better evidence than a blurred production inbox.

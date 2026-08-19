@@ -1,6 +1,6 @@
 # WhatsApp AI assistant with tools and memory
 
-A working prototype that receives WhatsApp messages through the Evolution API and lets an AI agent use a controlled set of email, calendar and task tools while retaining conversation context in Postgres.
+A working prototype that receives WhatsApp and Slack messages through the Evolution API and lets an AI agent use a controlled set of email, calendar and task tools while retaining conversation context in Postgres.
 
 ## Snapshot
 
@@ -10,7 +10,6 @@ A working prototype that receives WhatsApp messages through the Evolution API an
 | My role | Designed and built from scratch |
 | Main tools | n8n, Evolution API, Ollama, Postgres, Gmail, Google Calendar, Todoist and Slack |
 | Primary pattern | Event-driven agent with tool calling and persistent memory |
-| Data shown | Synthetic or anonymised |
 
 ## The problem
 
@@ -64,16 +63,17 @@ A standalone Mermaid source is available in [architecture.mmd](architecture.mmd)
 
 ## Result
 
-The prototype demonstrates an agent that can do useful work rather than only generate text. It combines conversational input, persistent memory, tool use and multi-channel responses in one n8n design.
+The workflow shows an agent that can do useful work rather than only generate text. It combines conversational input, persistent memory, tool use and multi-channel responses in one n8n design.
 
 ## What I built
 
 I designed and built the workflow, Evolution API integration, channel routing, memory layer and tool connections. AI coding assistance was used where useful for small code or expression tasks, with manual review and testing.
 
-## Evidence to add
+## Evidence 
 
-See [assets/README.md](assets/README.md). A short screen recording is particularly useful here because it can show a WhatsApp request, the n8n execution and the resulting calendar or task action.
+Workflow Overview
+![Workflow Overview](./assets/workflow-overview.png)
 
 ## Confidentiality
 
-The public version must not expose phone numbers, WhatsApp instance names, API hosts, calendar IDs, email accounts, task-list IDs, internal IP addresses or the original assistant prompt.
+The public version does not expose phone numbers, WhatsApp instance names, API hosts, calendar IDs, email accounts, task-list IDs, internal IP addresses.

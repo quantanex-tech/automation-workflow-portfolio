@@ -70,5 +70,8 @@ I designed the workflow structure, matching logic, Shopify integration, status r
 
 ## Evidence
 
+Workflow Overview
 ![Workflow Overview](./assets/workflow-overview.png)
+
+Matching and status logic
 ![Matching and Status Logic](./assets/matching-and-status-logic.png)

@@ -10,7 +10,7 @@ A simple voice agent that starts outbound AI voice calls, processes asynchronous
 | My role | Designed and built from scratch |
 | Main tools | n8n, Vapi, Google Sheets, Google Calendar, webhooks and REST APIs |
 | Primary pattern | Outbound request plus asynchronous callback |
-| Data shown | Synthetic |
+
 
 ## The problem
 
@@ -71,4 +71,17 @@ I have also built a smaller Twilio and n8n workflow that captures voicemail and 
 
 I designed and built the Vapi API calls, callback webhook, success branching, Google Sheets state updates and calendar-booking path. 
 
+## Evidence
+
+Workflow Overview
+![Workflow Overview](./assets/workflow-overview.png)
+
+VAPI Settings Prompt Snippet
+![VAPI Prompt Snippet](./assets/vapi-prompt-snippet.png)
+
+VAPI Settings 1
+![VAPI Settings 1](./assets/vapi-settings-1.png)
+
+VAPI Settings 2
+![VAPI Settings 2](./assets/vapi-settings-2.png)
 

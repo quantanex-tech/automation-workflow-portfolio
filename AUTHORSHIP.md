@@ -1,6 +1,6 @@
 # Authorship
 
-The four featured case studies were designed and built by Paul Hopgood from scratch.
+The featured case studies were designed and built by Paul Hopgood from scratch.
 
 AI coding tools were used as a development aid for some JavaScript Code nodes. Their output was reviewed, tested and adapted before use. The system design, workflow structure, integrations, data mapping, testing and operational decisions were Paul's work.
 

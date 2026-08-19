@@ -1,0 +1,691 @@
+{
+  "name": "Robo-caller",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "efebc507-4dbc-40fa-b9d8-c42ae0279843",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2176,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "2caa32a2-31b5-4948-9fa1-8bffd0aa0997",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7e4e9636-a11f-4d4b-ac70-95d96442a14e",
+      "name": "IF status empty",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"8b83993f-72c1-4ba9-9ef7-4c7dce8a7404\",\n  \"customer\": {\n    \"number\": \"{{ $json.phone }}\"\n  },\n  \"phoneNumberId\": \"811a1783-74c8-4c4d-a7a8-506fc9b5afa5\",\n  \"assistantOverrides\": {\n    \"variableValues\": {\n      \"customer_name\" : \"{{ $json.first_name }}\",\n      \"company_name\" : \"{{ $json.company }}\",\n      \"availability_from\" : \"tomorrow\",\n      \"availability_to\" : \"{{ DateTime.now().plus(4, \"days\").format('DDDD') }}\"\n    }\n  }\n} ",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "8c055466-642e-4717-864f-c476d937b2b3",
+      "name": "HTTP - VAPI Start Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -1200,
+        112
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Pkq5vVDcZqFLU7SB",
+          "name": "VAPI Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vapi-callback",
+        "options": {
+          "responseData": "allEntries"
+        }
+      },
+      "id": "feeb3501-d980-4fea-879e-aef61896854c",
+      "name": "Webhook - VAPI Callback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -2048,
+        480
+      ],
+      "webhookId": "e91a7189-5052-479e-96f1-f926f45c2265"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "5f5b5034-7055-4b8a-8cbf-0703bd22c08a",
+              "leftValue": "={{ $json.body.message.analysis.successEvaluation }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d6bb6919-0345-4c36-9e7d-7fc0f667cd6c",
+      "name": "IF call.completed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1792,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1i1_OL0-EgT3En9h6Jy4x56dGnVxfsSgwhIC4uUcyXh4",
+          "mode": "list",
+          "cachedResultName": "who you gonna call",
+          "cachedResultUrl": "https://[redacted-resource]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://[redacted-resource]/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "phone": "={{ $('IF call.completed').item.json.body.message.artifact.variables.customer.number }}",
+            "status": "booked",
+            "meeting_link": "={{ $json.conferenceData.entryPoints[0].uri }}",
+            "summary": "={{ $('IF call.completed').item.json.body.message.analysis.summary }}",
+            "transcript": "={{ $('IF call.completed').item.json.body.message.transcript }}",
+            "email": "={{ $('IF call.completed').item.json.body.message.analysis.structuredData.customer_email }}",
+            "meeting_datetime": "={{ $('IF call.completed').item.json.body.message.analysis.structuredData.meeting_datetime }}"
+          },
+          "matchingColumns": [
+            "phone"
+          ],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "transcript",
+              "displayName": "transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_link",
+              "displayName": "meeting_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_datetime",
+              "displayName": "meeting_datetime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "16da8d4e-078d-4083-9436-b30c19477e08",
+      "name": "Google Sheets - Update",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1216,
+        384
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yMyLWb7bEnr65624",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1i1_OL0-EgT3En9h6Jy4x56dGnVxfsSgwhIC4uUcyXh4",
+          "mode": "list",
+          "cachedResultName": "who you gonna call",
+          "cachedResultUrl": "https://[redacted-resource]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://[redacted-resource]/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "failed",
+            "phone": "={{ $json.body.message.artifact.variables.customer.number }}"
+          },
+          "matchingColumns": [
+            "phone"
+          ],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "transcript",
+              "displayName": "transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meeting_link",
+              "displayName": "meeting_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "4d2aadd9-c174-442f-b425-e7dbbdad5a9c",
+      "name": "Google Sheets - Mark Failed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1488,
+        592
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yMyLWb7bEnr65624",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "paul@quantanex.tech",
+          "mode": "list",
+          "cachedResultName": "Quantanex"
+        },
+        "start": "={{ $json.body.message.analysis.structuredData.meeting_datetime.toDateTime() }}",
+        "end": "={{ $json.body.message.analysis.structuredData.meeting_datetime.toDateTime().plus(30, \"minutes\") }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $json.body.message.analysis.structuredData.customer_email }}"
+          ],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "summary": "=Meeting with {{ $json.body.message.analysis.structuredData.company_name }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -1488,
+        384
+      ],
+      "id": "3c497c48-1b21-4a83-86cf-fbd45d21ad83",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "OXODmUYjCaHbnTdI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1i1_OL0-EgT3En9h6Jy4x56dGnVxfsSgwhIC4uUcyXh4",
+          "mode": "list",
+          "cachedResultName": "who you gonna call",
+          "cachedResultUrl": "https://[redacted-resource]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://[redacted-resource]/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "f4fd436c-d59c-4634-9dda-8f24cad12fa2",
+      "name": "Leads to contact",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1968,
+        96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yMyLWb7bEnr65624",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1712,
+        96
+      ],
+      "id": "d0635ae1-5a8a-4624-a70f-832857ed32a3",
+      "name": "Loop Over leads"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -960,
+        144
+      ],
+      "id": "90d227d5-4c36-42de-a6ce-44937d286400",
+      "name": "Wait before starting the next call",
+      "webhookId": "ff23e0d8-4206-49f9-b2f4-bd5a89ac0f5a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Leads to contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF status empty": {
+      "main": [
+        [
+          {
+            "node": "HTTP - VAPI Start Call",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - VAPI Callback": {
+      "main": [
+        [
+          {
+            "node": "IF call.completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF call.completed": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets - Mark Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Update": {
+      "main": [
+        []
+      ]
+    },
+    "Google Sheets - Mark Failed": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP - VAPI Start Call": {
+      "main": [
+        [
+          {
+            "node": "Wait before starting the next call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leads to contact": {
+      "main": [
+        [
+          {
+            "node": "Loop Over leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over leads": {
+      "main": [
+        [],
+        [
+          {
+            "node": "IF status empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait before starting the next call": {
+      "main": [
+        [
+          {
+            "node": "Loop Over leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "QkXnesMJSlhuiqJy",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 20
+  },
+  "versionId": "7ecf55a2-0447-48ea-8793-886b7a8dc128",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d3f5c437e907e17e2ab95e1b5e614fbcb24292dda197df94ecadff84bc920705"
+  },
+  "nodeGroups": [],
+  "id": "tZ70auPQYEDGLIrq",
+  "tags": []
+}
