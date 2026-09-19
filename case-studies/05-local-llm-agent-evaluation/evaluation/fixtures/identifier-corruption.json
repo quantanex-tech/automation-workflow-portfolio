@@ -1,0 +1,15 @@
+{
+  "scenario": "answer_from_tool_data_then_stop",
+  "attempt": 1,
+  "seed": 910501,
+  "finish_reason": "tool_calls",
+  "tool_name": "lookup_ticket",
+  "expected_parsed_arguments": {
+    "ticket_id": "DEMO-42"
+  },
+  "actual_parsed_arguments": {
+    "ticket_id": "DEM-42"
+  },
+  "classification": "wrong_arguments",
+  "finding": "The call was structurally valid but changed the exact identifier."
+}

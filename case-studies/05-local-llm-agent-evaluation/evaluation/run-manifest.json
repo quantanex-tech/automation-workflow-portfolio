@@ -1,0 +1,60 @@
+{
+  "baseline_date": "2026-09-08",
+  "runtime": {
+    "server": "llama.cpp",
+    "build": "b10680-d7bd3bfca",
+    "context_length": 65536,
+    "model_train_context": 1048576
+  },
+  "model": {
+    "repository": "empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF",
+    "file": "Qwythos-9B-Claude-Mythos-5-1M-MTP-Q6_K.gguf",
+    "quantisation": "Q6_K",
+    "repository_revision": "5cebd89dd078b033c26988248740ddadf40f2fbd",
+    "file_sha256": "b6ca7dc848d9857c7759d7da6da502d1cb8941b69471375d74c7a539ddc381e9"
+  },
+  "api_scenario_request": {
+    "tool_choice": "auto",
+    "parallel_tool_calls": false,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "repeat_penalty": 1.05,
+    "max_tokens": 1024,
+    "stream": false,
+    "seed": "fixed per scenario and attempt"
+  },
+  "chain_request": {
+    "tool_choice": "auto",
+    "parallel_tool_calls": false,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "repeat_penalty": 1.05,
+    "max_tokens": 768,
+    "stream": false,
+    "seed": "fixed per run and step"
+  },
+  "tool_template": {
+    "native_tool_calls_supported": true,
+    "reasoning_effort_supported": false,
+    "observed_success_finish_reason": "tool_calls"
+  },
+  "hermes_coding_tasks": {
+    "tool_use_enforcement": "auto",
+    "toolsets": ["file", "terminal"],
+    "fallback_providers": [],
+    "context_length": 65536
+  },
+  "original_runner_sha256": {
+    "api_scenarios": "c03d1e903b6d8e1ccd344a39a6f959386a0b3dceafdb60f7e2d9ead9dfea0331",
+    "long_chains": "2907ea483320e60b7b223c23c84c585135b06f73440ec2ecc5a54e5dbb2d54a4",
+    "hermes_coding_tasks": "49e495451fb11a6338144590dff7e8ebbc6f47315392b3573f28c16792ec5bbf"
+  },
+  "public_runner_sha256": {
+    "api_scenarios": "289241e022fe72e52d4315ddef2149274d8c17cb0f77ff310c50bcd4a7d1b3f9",
+    "long_chains": "a7529a07a4aca9b7c71d334995f2036d464728ef1d5385fbefe55004b4f761f2",
+    "hermes_coding_tasks": "aa62cb66d22092bf072f135204477abc4984a82f3fb932f5f27fcc659d46d95d"
+  },
+  "publication_note": "The public runners were sanitised and strengthened after review with type-sensitive JSON comparison, stricter terminal-response checks and opt-in server metadata capture. The published result summaries describe the retained original baseline."
+}

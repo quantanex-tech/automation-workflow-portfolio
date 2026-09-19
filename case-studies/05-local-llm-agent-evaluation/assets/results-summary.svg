@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Local LLM agent reliability evaluation results</title>
+  <desc id="desc">Summary of API scenarios, Hermes coding tasks, and fifteen-call chain evaluation.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#111c30"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#37d6c0"/>
+      <stop offset="1" stop-color="#5b8cff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#020617" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g opacity="0.13" stroke="#7f95b5" stroke-width="1">
+    <path d="M0 100H1600M0 200H1600M0 300H1600M0 400H1600M0 500H1600M0 600H1600M0 700H1600M0 800H1600"/>
+    <path d="M100 0V900M200 0V900M300 0V900M400 0V900M500 0V900M600 0V900M700 0V900M800 0V900M900 0V900M1000 0V900M1100 0V900M1200 0V900M1300 0V900M1400 0V900M1500 0V900"/>
+  </g>
+
+  <text x="100" y="105" fill="#f8fafc" font-family="DejaVu Sans, sans-serif" font-size="50" font-weight="700">Local LLM agent reliability evaluation</text>
+  <text x="102" y="151" fill="#9fb0c7" font-family="DejaVu Sans, sans-serif" font-size="23">Native tool calling, externally verified coding tasks and long-chain argument fidelity</text>
+  <rect x="100" y="181" width="1400" height="5" rx="2.5" fill="url(#accent)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="100" y="235" width="430" height="235" rx="24" fill="#16243b" stroke="#27415f" stroke-width="2"/>
+    <rect x="585" y="235" width="430" height="235" rx="24" fill="#16243b" stroke="#27415f" stroke-width="2"/>
+    <rect x="1070" y="235" width="430" height="235" rx="24" fill="#16243b" stroke="#27415f" stroke-width="2"/>
+  </g>
+
+  <text x="135" y="285" fill="#9fb0c7" font-family="DejaVu Sans, sans-serif" font-size="21" font-weight="600">API BEHAVIOUR SCENARIOS</text>
+  <text x="135" y="375" fill="#37d6c0" font-family="DejaVu Sans, sans-serif" font-size="76" font-weight="700">29/30</text>
+  <text x="137" y="420" fill="#f8fafc" font-family="DejaVu Sans, sans-serif" font-size="25">96.7% passed</text>
+  <text x="137" y="452" fill="#9fb0c7" font-family="DejaVu Sans, sans-serif" font-size="18">1 exact identifier changed</text>
+
+  <text x="620" y="285" fill="#9fb0c7" font-family="DejaVu Sans, sans-serif" font-size="21" font-weight="600">HERMES CODING TASKS</text>
+  <text x="620" y="375" fill="#5b8cff" font-family="DejaVu Sans, sans-serif" font-size="76" font-weight="700">3/3</text>
+  <text x="622" y="420" fill="#f8fafc" font-family="DejaVu Sans, sans-serif" font-size="25">expected outcomes met</text>
+  <text x="622" y="452" fill="#9fb0c7" font-family="DejaVu Sans, sans-serif" font-size="18">externally verified; no cloud fallback</text>
+
+  <text x="1105" y="285" fill="#9fb0c7" font-family="DejaVu Sans, sans-serif" font-size="21" font-weight="600">15-CALL CHAINS</text>
+  <text x="1105" y="375" fill="#f6c85f" font-family="DejaVu Sans, sans-serif" font-size="76" font-weight="700">27/30</text>
+  <text x="1107" y="420" fill="#f8fafc" font-family="DejaVu Sans, sans-serif" font-size="25">complete runs</text>
+  <text x="1107" y="452" fill="#9fb0c7" font-family="DejaVu Sans, sans-serif" font-size="18">3 semantic argument errors</text>
+
+  <g filter="url(#shadow)">
+    <rect x="100" y="520" width="1400" height="270" rx="24" fill="#121f34" stroke="#27415f" stroke-width="2"/>
+  </g>
+  <text x="140" y="575" fill="#f8fafc" font-family="DejaVu Sans, sans-serif" font-size="28" font-weight="700">What the raw pass rate did not show</text>
+
+  <rect x="140" y="620" width="860" height="30" rx="15" fill="#263752"/>
+  <rect x="140" y="620" width="835" height="30" rx="15" fill="url(#accent)"/>
+  <text x="1030" y="644" fill="#f8fafc" font-family="DejaVu Sans, sans-serif" font-size="24" font-weight="700">437 correct calls</text>
+  <text x="140" y="688" fill="#b6c4d8" font-family="DejaVu Sans, sans-serif" font-size="22">Of 450 planned calls: 437 correct · 3 incorrect · 10 not attempted after stop</text>
+  <text x="140" y="731" fill="#f8fafc" font-family="DejaVu Sans, sans-serif" font-size="27" font-weight="600">Tool syntax remained valid while exact values drifted.</text>
+  <text x="140" y="765" fill="#8396b2" font-family="DejaVu Sans, sans-serif" font-size="18">Implication: validate arguments at the action boundary; do not treat parseable JSON as a correct decision.</text>
+
+  <text x="100" y="850" fill="#778aa6" font-family="DejaVu Sans, sans-serif" font-size="18">30 API trials · 3 disposable coding tasks · 30 long-chain runs · mock API tools · deterministic scoring</text>
+</svg>
