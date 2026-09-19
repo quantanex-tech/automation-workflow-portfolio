@@ -17,6 +17,11 @@ unsanitised/
 # Local audit output
 portfolio-audit-report.txt
 
+# Generated local-model evaluation runs
+case-studies/05-local-llm-agent-evaluation/run-api/
+case-studies/05-local-llm-agent-evaluation/run-chain/
+case-studies/05-local-llm-agent-evaluation/run-coding/
+
 # Python cache files
 __pycache__/
 *.pyc

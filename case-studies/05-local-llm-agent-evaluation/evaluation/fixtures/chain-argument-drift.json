@@ -1,0 +1,34 @@
+{
+  "evaluation": "fifteen_call_chains",
+  "classification": "wrong_arguments",
+  "failures": [
+    {
+      "run": 4,
+      "failed_step": 12,
+      "successful_prior_calls": 11,
+      "seed": 920412,
+      "finish_reason": "tool_calls",
+      "expected": {"run_id": "CHAIN-R04", "step": 12, "token": "CHAIN-R04-S11-K2511"},
+      "actual": {"run_id": "CHAIN-R04", "step": 13, "token": "CHAIN-R04-S12-K2704"}
+    },
+    {
+      "run": 15,
+      "failed_step": 9,
+      "successful_prior_calls": 8,
+      "seed": 921509,
+      "finish_reason": "tool_calls",
+      "expected": {"run_id": "CHAIN-R15", "step": 9, "token": "CHAIN-R15-S08-K2999"},
+      "actual": {"run_id": "CHAIN-R15", "step": 9, "token": "CHAIN-R15-S09-K4192"}
+    },
+    {
+      "run": 21,
+      "failed_step": 14,
+      "successful_prior_calls": 13,
+      "seed": 922114,
+      "finish_reason": "tool_calls",
+      "expected": {"run_id": "CHAIN-R21", "step": 14, "token": "CHAIN-R21-S13-K4546"},
+      "actual": {"run_id": "CHAIN-R21", "step": 15, "token": "CHAIN-R21-S14-K4739"}
+    }
+  ],
+  "finding": "Every failure remained a parsed native tool call; two calls skipped to future-looking state, while run 15 retained the step number but invented a token that had never been returned."
+}

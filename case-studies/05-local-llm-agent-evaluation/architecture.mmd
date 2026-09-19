@@ -1,0 +1,14 @@
+flowchart LR
+    A[Evaluation runner] --> B[llama.cpp API]
+    B --> C[Native tool call]
+    C --> D[Parse JSON arguments]
+    D --> E{Expected action?}
+    E -->|Yes| F[Inject mock tool result]
+    F --> B
+    E -->|No| G[Classify and save failure]
+    B --> H[Raw request and response archive]
+
+    I[Hermes coding runner] --> J[Disposable workspace]
+    J --> K[Local model with file and terminal tools]
+    K --> L[External reference tests]
+    L --> M[Verified result]

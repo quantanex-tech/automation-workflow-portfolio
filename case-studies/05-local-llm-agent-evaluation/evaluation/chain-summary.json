@@ -1,0 +1,29 @@
+{
+  "evaluation": "fifteen_call_chains",
+  "model_label": "local 9B-class GGUF model",
+  "runtime": "llama.cpp OpenAI-compatible API",
+  "tool_choice": "auto",
+  "runs": 30,
+  "calls_required_per_run": 15,
+  "planned_tool_calls": 450,
+  "passed_runs": 27,
+  "run_pass_rate": 0.9,
+  "attempted_tool_calls": 440,
+  "strict_correct_calls": 437,
+  "incorrect_calls": 3,
+  "unattempted_after_first_failure": 10,
+  "strict_correct_rate_of_attempted_calls": 0.9932,
+  "completed_chain_final_answers_correct": 27,
+  "failure_classes": {
+    "wrong_arguments": 3,
+    "wrong_action": 0,
+    "tool_format_error": 0,
+    "transport_failure": 0
+  },
+  "failed_phases": {
+    "step_9": 1,
+    "step_12": 1,
+    "step_14": 1
+  },
+  "note": "Each failed run stopped at its first incorrect call; later calls were not attempted."
+}

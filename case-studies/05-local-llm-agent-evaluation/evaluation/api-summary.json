@@ -1,0 +1,29 @@
+{
+  "evaluation": "native_tool_call_behaviour",
+  "model_label": "local 9B-class GGUF model",
+  "runtime": "llama.cpp OpenAI-compatible API",
+  "scoring": {
+    "tool_choice": "auto",
+    "attempts_per_scenario": 5,
+    "arguments_compared_as": "parsed JSON objects",
+    "mock_tools_only": true,
+    "fixed_seeds": true
+  },
+  "total_trials": 30,
+  "passed_trials": 29,
+  "pass_rate": 0.9667,
+  "scenarios": {
+    "select_correct_tool": {"total": 5, "passed": 5},
+    "preserve_identifiers_and_types": {"total": 5, "passed": 5},
+    "second_call_from_first_result": {"total": 5, "passed": 5},
+    "handle_mock_tool_error": {"total": 5, "passed": 5},
+    "answer_from_tool_data_then_stop": {"total": 5, "passed": 4},
+    "answer_without_unnecessary_tool": {"total": 5, "passed": 5}
+  },
+  "failure_classes": {
+    "wrong_arguments": 1,
+    "wrong_action": 0,
+    "tool_format_error": 0,
+    "transport_failure": 0
+  }
+}
